@@ -1,7 +1,24 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import logo from "@/assets/aiguru-logo.jpg";
+import { useAuth } from "@/hooks/useAuth";
+import { LogOut, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
+  const { user, profile, loading, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
@@ -22,12 +39,33 @@ const Header = () => {
           <a href="#roadmap" className="text-sm text-muted-foreground transition-colors hover:text-accent">Roadmap</a>
           <a href="/lessons" className="text-sm text-muted-foreground transition-colors hover:text-accent">သင်ခန်းစာ</a>
         </nav>
-        <a
-          href="/auth"
-          className="rounded-lg border border-neon bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-all hover:bg-accent/20 hover:glow-neon"
-        >
-          ဝင်ရောက်မည်
-        </a>
+
+        {loading ? (
+          <div className="h-9 w-24 animate-pulse rounded-lg bg-muted" />
+        ) : user && profile ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg border border-neon bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-all hover:bg-accent/20">
+              <User className="h-4 w-4" />
+              {profile.username}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="border-neon bg-card">
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="cursor-pointer text-destructive focus:text-destructive"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                ထွက်မည်
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <a
+            href="/auth"
+            className="rounded-lg border border-neon bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-all hover:bg-accent/20"
+          >
+            ဝင်ရောက်မည်
+          </a>
+        )}
       </div>
     </motion.header>
   );
