@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -15,10 +17,20 @@ interface Lesson {
 }
 
 const Lessons = () => {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Redirect to auth if not logged in
   useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
     const fetchLessons = async () => {
       const { data, error } = await supabase
         .from("lessons")
@@ -30,7 +42,7 @@ const Lessons = () => {
       setLoading(false);
     };
     fetchLessons();
-  }, []);
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background">
