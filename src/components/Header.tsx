@@ -37,7 +37,9 @@ const Header = () => {
           <a href="#about" className="text-sm text-muted-foreground transition-colors hover:text-accent">About</a>
           <a href="#fields" className="text-sm text-muted-foreground transition-colors hover:text-accent">AI Fields</a>
           <a href="#roadmap" className="text-sm text-muted-foreground transition-colors hover:text-accent">Roadmap</a>
-          <a href="/lessons" className="text-sm text-muted-foreground transition-colors hover:text-accent">သင်ခန်းစာ</a>
+          {user && (
+            <a href="/lessons" className="text-sm text-muted-foreground transition-colors hover:text-accent">သင်ခန်းစာ</a>
+          )}
         </nav>
 
         {loading ? (

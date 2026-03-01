@@ -1,7 +1,20 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import mentorImage from "@/assets/mentor.png";
+import { useAuth } from "@/hooks/useAuth";
 
 const Hero = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleStartLearning = () => {
+    if (user) {
+      navigate("/lessons");
+    } else {
+      navigate("/auth");
+    }
+  };
+
   return (
     <section id="hero" className="bg-gradient-hero relative min-h-screen overflow-hidden pt-20">
       {/* Subtle grid overlay */}
@@ -37,14 +50,14 @@ const Hero = () => {
             အခြား AI နယ်ပယ်များကို အဆင့်ဆင့် သင်ယူလိုက်ပါ။
           </p>
 
-          <motion.a
-            href="#about"
+          <motion.button
+            onClick={handleStartLearning}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="inline-block rounded-xl bg-accent px-8 py-4 font-myanmar text-base font-semibold text-accent-foreground shadow-lg transition-shadow animate-pulse-glow hover:shadow-accent/40"
           >
-            စတင်လေ့လာမည်
-          </motion.a>
+            {user ? "စတင်လေ့လာမည်" : "ဝင်ရောက်မည်"}
+          </motion.button>
         </motion.div>
 
         {/* Right image */}
