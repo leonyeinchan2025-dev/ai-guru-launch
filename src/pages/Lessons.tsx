@@ -87,7 +87,8 @@ const Lessons = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="group rounded-xl border border-neon bg-gradient-card p-6 transition-all hover:glow-neon"
+                onClick={() => navigate(`/lessons/${lesson.id}`)}
+                className="group cursor-pointer rounded-xl border border-neon bg-gradient-card p-6 transition-all hover:glow-neon"
               >
                 <span className="mb-3 inline-block rounded-full border border-neon bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
                   {lesson.category}
