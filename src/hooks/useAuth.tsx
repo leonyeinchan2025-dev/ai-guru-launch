@@ -6,29 +6,43 @@ interface Profile {
   username: string;
   email: string;
   avatar_url: string | null;
+  is_approved: boolean;
 }
+
+type AppRole = 'admin' | 'moderator' | 'user';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("username, email, avatar_url, is_approved")
+      .eq("user_id", userId)
+      .single();
+    setProfile(data);
+
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    setIsAdmin(!!roleData);
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Fetch profile with setTimeout to avoid deadlock
-          setTimeout(async () => {
-            const { data } = await supabase
-              .from("profiles")
-              .select("username, email, avatar_url")
-              .eq("user_id", session.user.id)
-              .single();
-            setProfile(data);
-          }, 0);
+          setTimeout(() => fetchProfile(session.user.id), 0);
         } else {
           setProfile(null);
+          setIsAdmin(false);
         }
         setLoading(false);
       }
@@ -37,12 +51,7 @@ export const useAuth = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        supabase
-          .from("profiles")
-          .select("username, email, avatar_url")
-          .eq("user_id", session.user.id)
-          .single()
-          .then(({ data }) => setProfile(data));
+        fetchProfile(session.user.id);
       }
       setLoading(false);
     });
@@ -54,5 +63,5 @@ export const useAuth = () => {
     await supabase.auth.signOut();
   };
 
-  return { user, profile, loading, signOut };
+  return { user, profile, isAdmin, loading, signOut };
 };

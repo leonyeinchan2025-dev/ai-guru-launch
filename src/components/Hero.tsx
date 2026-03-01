@@ -8,11 +8,7 @@ const Hero = () => {
   const navigate = useNavigate();
 
   const handleStartLearning = () => {
-    if (user) {
-      navigate("/lessons");
-    } else {
-      navigate("/auth");
-    }
+    navigate("/lessons");
   };
 
   return (
@@ -56,7 +52,7 @@ const Hero = () => {
             whileTap={{ scale: 0.95 }}
             className="inline-block rounded-xl bg-accent px-8 py-4 font-myanmar text-base font-semibold text-accent-foreground shadow-lg transition-shadow animate-pulse-glow hover:shadow-accent/40"
           >
-            {user ? "စတင်လေ့လာမည်" : "ဝင်ရောက်မည်"}
+            စတင်လေ့လာမည်
           </motion.button>
         </motion.div>
 
