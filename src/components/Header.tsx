@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/aiguru-logo.jpg";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, isAdmin, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -37,9 +37,7 @@ const Header = () => {
           <a href="#about" className="text-sm text-muted-foreground transition-colors hover:text-accent">About</a>
           <a href="#fields" className="text-sm text-muted-foreground transition-colors hover:text-accent">AI Fields</a>
           <a href="#roadmap" className="text-sm text-muted-foreground transition-colors hover:text-accent">Roadmap</a>
-          {user && (
-            <a href="/lessons" className="text-sm text-muted-foreground transition-colors hover:text-accent">သင်ခန်းစာ</a>
-          )}
+          <a href="/lessons" className="text-sm text-muted-foreground transition-colors hover:text-accent">သင်ခန်းစာများ</a>
         </nav>
 
         {loading ? (
@@ -51,6 +49,15 @@ const Header = () => {
               {profile.username}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="border-neon bg-card">
+              {isAdmin && (
+                <DropdownMenuItem
+                  onClick={() => navigate("/admin")}
+                  className="cursor-pointer text-accent focus:text-accent"
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Admin Panel
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 onClick={handleSignOut}
                 className="cursor-pointer text-destructive focus:text-destructive"
@@ -62,7 +69,7 @@ const Header = () => {
           </DropdownMenu>
         ) : (
           <a
-            href="/auth"
+            href="/lessons"
             className="rounded-lg border border-neon bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-all hover:bg-accent/20"
           >
             ဝင်ရောက်မည်

@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Clock } from "lucide-react";
 
 interface Lesson {
   id: string;
@@ -17,7 +17,7 @@ interface Lesson {
 }
 
 const Lessons = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +28,8 @@ const Lessons = () => {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
+
+  const isApproved = profile?.is_approved ?? false;
 
   useEffect(() => {
     if (!user) return;
@@ -61,7 +63,21 @@ const Lessons = () => {
           </p>
         </motion.div>
 
-        {loading ? (
+        {!isApproved ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mx-auto max-w-md rounded-2xl border border-neon bg-card p-12 text-center glow-neon"
+          >
+            <Clock className="mx-auto mb-4 h-12 w-12 text-accent" />
+            <h2 className="font-heading text-xl font-bold text-foreground">
+              အတည်ပြုချက် စောင့်ဆိုင်းနေပါသည်
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              သင့်အကောင့်ကို Admin မှ အတည်ပြုပြီးမှသာ သင်ခန်းစာများကို ကြည့်ရှုနိုင်ပါမည်။
+            </p>
+          </motion.div>
+        ) : loading ? (
           <div className="flex justify-center py-20">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           </div>
