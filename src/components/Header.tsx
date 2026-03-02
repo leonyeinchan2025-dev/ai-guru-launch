@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/aiguru-logo.jpg";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { LogOut, User, Shield } from "lucide-react";
 import {
   DropdownMenu,
@@ -13,6 +15,30 @@ import {
 const Header = () => {
   const { user, profile, isAdmin, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // Fetch pending user count for admin badge
+  useEffect(() => {
+    if (!isAdmin) return;
+    const fetchPending = async () => {
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_approved", false);
+      setPendingCount(count ?? 0);
+    };
+    fetchPending();
+
+    // Realtime updates
+    const channel = supabase
+      .channel('header-pending-count')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        fetchPending();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isAdmin]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -56,6 +82,11 @@ const Header = () => {
                 >
                   <Shield className="mr-2 h-4 w-4" />
                   Admin Panel
+                  {pendingCount > 0 && (
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                      {pendingCount}
+                    </span>
+                  )}
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
