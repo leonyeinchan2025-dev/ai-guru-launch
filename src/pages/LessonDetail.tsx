@@ -18,7 +18,7 @@ interface Lesson {
 
 const LessonDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ const LessonDetail = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (!user || !id) return;
+    if (!user || !id || !profile?.is_approved) return;
     const fetchLesson = async () => {
       const { data, error } = await supabase
         .from("lessons")
@@ -43,7 +43,7 @@ const LessonDetail = () => {
       setLoading(false);
     };
     fetchLesson();
-  }, [user, id]);
+  }, [user, id, profile]);
 
   return (
     <div className="min-h-screen bg-background">
