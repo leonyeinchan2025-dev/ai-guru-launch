@@ -44,29 +44,6 @@ const AdminPanel = () => {
     if (user && isAdmin) fetchUsers();
   }, [user, isAdmin]);
 
-  // Realtime: listen for new user registrations
-  useEffect(() => {
-    if (!user || !isAdmin) return;
-    const channel = supabase
-      .channel('admin-new-users')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'profiles' },
-        (payload) => {
-          const newUser = payload.new as UserProfile;
-          toast.info(`အသုံးပြုသူအသစ် "${newUser.username}" စာရင်းသွင်းပြီးပါပြီ`, {
-            duration: 8000,
-          });
-          fetchUsers();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, isAdmin]);
-
   const handleApprove = async (userId: string, approve: boolean) => {
     const { error } = await supabase
       .from("profiles")
