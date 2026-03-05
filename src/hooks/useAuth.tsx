@@ -18,43 +18,55 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("username, email, avatar_url, is_approved")
-      .eq("user_id", userId)
-      .single();
-    setProfile(data);
+    const [{ data: profileData }, { data: roleData }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("username, email, avatar_url, is_approved")
+        .eq("user_id", userId)
+        .single(),
+      supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle(),
+    ]);
 
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
+    setProfile(profileData ?? null);
     setIsAdmin(!!roleData);
   };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        setLoading(true);
         setUser(session?.user ?? null);
+
         if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
+          await fetchProfile(session.user.id);
         } else {
           setProfile(null);
           setIsAdmin(false);
         }
+
         setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    (async () => {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
+
       if (session?.user) {
-        fetchProfile(session.user.id);
+        await fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
+        setIsAdmin(false);
       }
+
       setLoading(false);
-    });
+    })();
 
     return () => subscription.unsubscribe();
   }, []);
