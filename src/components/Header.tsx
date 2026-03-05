@@ -34,9 +34,10 @@ const Header = () => {
           </span>
         </div>
         <nav className="hidden items-center gap-6 md:flex">
-          <a href="#about" className="text-sm text-muted-foreground transition-colors hover:text-accent">About</a>
-          <a href="#fields" className="text-sm text-muted-foreground transition-colors hover:text-accent">AI Fields</a>
-          <a href="#roadmap" className="text-sm text-muted-foreground transition-colors hover:text-accent">Roadmap</a>
+          <a href="/" className="text-sm text-muted-foreground transition-colors hover:text-accent">Home</a>
+          <a href="/#about" className="text-sm text-muted-foreground transition-colors hover:text-accent">About</a>
+          <a href="/#fields" className="text-sm text-muted-foreground transition-colors hover:text-accent">AI Fields</a>
+          <a href="/#roadmap" className="text-sm text-muted-foreground transition-colors hover:text-accent">Roadmap</a>
           <a href="/lessons" className="text-sm text-muted-foreground transition-colors hover:text-accent">သင်ခန်းစာများ</a>
         </nav>
 
