@@ -18,28 +18,65 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const [{ data: profileData }, { data: roleData }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("username, email, avatar_url, is_approved")
-        .eq("user_id", userId)
-        .single(),
-      supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle(),
-    ]);
+    try {
+      const [{ data: profileData, error: profileError }, { data: roleData, error: roleError }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("username, email, avatar_url, is_approved")
+          .eq("user_id", userId)
+          .single(),
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "admin")
+          .maybeSingle(),
+      ]);
 
-    setProfile(profileData ?? null);
-    setIsAdmin(!!roleData);
+      if (profileError) {
+        console.error("Failed to fetch profile:", profileError);
+      }
+
+      if (roleError) {
+        console.error("Failed to fetch admin role:", roleError);
+      }
+
+      setProfile(profileData ?? null);
+      setIsAdmin(!!roleData);
+    } catch (error) {
+      console.error("Unexpected auth fetch error:", error);
+      setProfile(null);
+      setIsAdmin(false);
+    }
   };
 
   useEffect(() => {
+    const fallbackTimeout = window.setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        try {
+          setLoading(true);
+          setUser(session?.user ?? null);
+
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+          } else {
+            setProfile(null);
+            setIsAdmin(false);
+          }
+        } finally {
+          setLoading(false);
+        }
+      }
+    );
+
+    (async () => {
+      try {
         setLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
         setUser(session?.user ?? null);
 
         if (session?.user) {
@@ -48,31 +85,22 @@ export const useAuth = () => {
           setProfile(null);
           setIsAdmin(false);
         }
-
+      } finally {
         setLoading(false);
       }
-    );
-
-    (async () => {
-      setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-        setIsAdmin(false);
-      }
-
-      setLoading(false);
     })();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.clearTimeout(fallbackTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Sign out failed:", error);
+    }
   };
 
   return { user, profile, isAdmin, loading, signOut };
