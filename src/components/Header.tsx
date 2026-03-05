@@ -11,13 +11,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
-  const { user, profile, isAdmin, loading, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/");
+    window.location.assign("/");
   };
+
+  const displayName = profile?.username || user?.email?.split("@")[0] || "Account";
 
   return (
     <motion.header
@@ -41,18 +43,16 @@ const Header = () => {
           <a href="/lessons" className="text-sm text-muted-foreground transition-colors hover:text-accent">သင်ခန်းစာများ</a>
         </nav>
 
-        {loading ? (
-          <div className="h-9 w-24 animate-pulse rounded-lg bg-muted" />
-        ) : user && profile ? (
+        {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg border border-neon bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-all hover:bg-accent/20">
               <User className="h-4 w-4" />
-              {profile.username}
+              {displayName}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="border-neon bg-card">
               {isAdmin && (
                 <DropdownMenuItem
-                  onClick={() => navigate("/admin")}
+                  onSelect={() => navigate("/admin")}
                   className="cursor-pointer text-accent focus:text-accent"
                 >
                   <Shield className="mr-2 h-4 w-4" />
@@ -60,7 +60,7 @@ const Header = () => {
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
-                onClick={handleSignOut}
+                onSelect={handleSignOut}
                 className="cursor-pointer text-destructive focus:text-destructive"
               >
                 <LogOut className="mr-2 h-4 w-4" />
@@ -70,7 +70,7 @@ const Header = () => {
           </DropdownMenu>
         ) : (
           <a
-            href="/lessons"
+            href="/auth"
             className="rounded-lg border border-neon bg-accent/10 px-4 py-2 text-sm font-medium text-accent transition-all hover:bg-accent/20"
           >
             ဝင်ရောက်မည်

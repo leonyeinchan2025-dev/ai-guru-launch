@@ -17,7 +17,7 @@ interface Lesson {
 }
 
 const Lessons = () => {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ const Lessons = () => {
     }
   }, [user, authLoading, navigate]);
 
-  const isApproved = profile?.is_approved ?? false;
+  const canAccessLessons = !!user && (isAdmin || (profile?.is_approved ?? false));
 
   useEffect(() => {
     if (!user) return;
@@ -63,7 +63,11 @@ const Lessons = () => {
           </p>
         </motion.div>
 
-        {!isApproved ? (
+        {authLoading || !user ? (
+          <div className="flex justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+          </div>
+        ) : !canAccessLessons ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
